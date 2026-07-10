@@ -1,0 +1,37 @@
+# Dependencies and build output
+/node_modules/
+/.next/
+/out/
+/coverage/
+/outputs/
+*.tsbuildinfo
+.turbo/
+
+# Secrets: only the redacted template may be committed
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Sensitive mail/runtime artifacts
+/data/
+/downloads/
+/attachments/
+/mail-cache/
+*.eml
+*.mbox
+*.log
+debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS and editors
+.DS_Store
+.idea/
+.vscode/
+*.swp

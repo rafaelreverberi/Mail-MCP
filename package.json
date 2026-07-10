@@ -1,0 +1,59 @@
+{
+  "name": "mail-mcp",
+  "version": "1.0.0",
+  "private": false,
+  "description": "A secure MCP server for any standard IMAP/SMTP mailbox",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "imap",
+    "smtp",
+    "email"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "next dev --hostname ${MCP_HOST:-127.0.0.1} --port ${MCP_PORT:-3000}",
+    "build": "next build",
+    "start": "next start --hostname ${MCP_HOST:-127.0.0.1} --port ${MCP_PORT:-3000}",
+    "start:tunnel": "bash scripts/start.sh",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "dotenv -e .env.local -- env RUN_IMAP_INTEGRATION_TESTS=true vitest run tests/imap.integration.test.ts",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build && npm audit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@upstash/redis": "1.38.0",
+    "html-to-text": "9.0.5",
+    "imapflow": "1.4.7",
+    "jose": "6.2.3",
+    "mailparser": "3.9.14",
+    "next": "16.2.10",
+    "nodemailer": "9.0.3",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "server-only": "0.0.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/html-to-text": "9.0.4",
+    "@types/mailparser": "3.4.6",
+    "@types/node": "24.10.13",
+    "@types/nodemailer": "7.0.11",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "dotenv-cli": "11.0.0",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.10",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  },
+  "overrides": {
+    "postcss": "8.5.16"
+  }
+}
