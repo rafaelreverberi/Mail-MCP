@@ -7,11 +7,15 @@ cd "$PROJECT_ROOT"
 
 ENV_FILE="${ENV_FILE:-.env.local}"
 
-if [[ -f "$ENV_FILE" ]]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$ENV_FILE"
-  set +a
+if [[ -f "$ENV_FILE" && "${MAIL_MCP_ENV_LOADED:-}" != "1" ]]; then
+  export ENV_FILE
+  export MAIL_MCP_ENV_LOADED=1
+  exec node --env-file="$ENV_FILE" -e '
+    const { spawn } = require("node:child_process");
+    const child = spawn(process.argv[1], process.argv.slice(2), { env: process.env, stdio: "inherit" });
+    child.on("error", (error) => { console.error(error.message); process.exit(1); });
+    child.on("exit", (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
+  ' "$0" "$@"
 fi
 
 require_value() {
