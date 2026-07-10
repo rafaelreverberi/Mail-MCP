@@ -6,11 +6,17 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 ENV_FILE="${ENV_FILE:-.env.local}"
+NODE_BIN="${NODE_BIN:-$(command -v node || true)}"
+
+if [[ -z "$NODE_BIN" ]]; then
+  echo "node was not found. Mail-MCP requires Node.js 20.9 or newer." >&2
+  exit 1
+fi
 
 if [[ -f "$ENV_FILE" && "${MAIL_MCP_ENV_LOADED:-}" != "1" ]]; then
   export ENV_FILE
   export MAIL_MCP_ENV_LOADED=1
-  exec node --env-file="$ENV_FILE" -e '
+  exec "$NODE_BIN" --env-file="$ENV_FILE" -e '
     const { spawn } = require("node:child_process");
     const child = spawn(process.argv[1], process.argv.slice(2), { env: process.env, stdio: "inherit" });
     child.on("error", (error) => { console.error(error.message); process.exit(1); });
@@ -30,6 +36,12 @@ require_value() {
 
 require_value CONTROL_PLANE_API_KEY
 require_value CONTROL_PLANE_TUNNEL_ID
+
+NPM_BIN="${NPM_BIN:-$(command -v npm || true)}"
+if [[ -z "$NPM_BIN" ]]; then
+  echo "npm was not found. Install Node.js with npm or set NPM_BIN." >&2
+  exit 1
+fi
 
 if [[ -n "${TUNNEL_CLIENT_BIN:-}" ]]; then
   TUNNEL_CLIENT="$TUNNEL_CLIENT_BIN"
@@ -61,11 +73,11 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 0' INT TERM
 
-npm run start &
+"$NPM_BIN" run start &
 SERVER_PID="$!"
 
 for _ in {1..30}; do
-  if node -e 'fetch(process.argv[1]).then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))' "$HEALTH_URL" >/dev/null 2>&1; then
+  if "$NODE_BIN" -e 'fetch(process.argv[1]).then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))' "$HEALTH_URL" >/dev/null 2>&1; then
     break
   fi
   if ! kill -0 "$SERVER_PID" 2>/dev/null; then
@@ -75,7 +87,7 @@ for _ in {1..30}; do
   sleep 1
 done
 
-if ! node -e 'fetch(process.argv[1]).then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))' "$HEALTH_URL" >/dev/null 2>&1; then
+if ! "$NODE_BIN" -e 'fetch(process.argv[1]).then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))' "$HEALTH_URL" >/dev/null 2>&1; then
   echo "Mail-MCP did not become healthy at $HEALTH_URL." >&2
   exit 1
 fi

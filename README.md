@@ -212,6 +212,26 @@ npm run start:tunnel
 
 Set `ENV_FILE=/path/to/your.env` before the command if your environment file is not `.env.local`. Stop both processes with `Ctrl+C`.
 
+### Raspberry Pi autostart
+
+Mail-MCP supports Raspberry Pi OS systems that use `systemd`. Install Node.js 20.9+ and the ARM-compatible OpenAI `tunnel-client`, then run this once from the project root:
+
+```bash
+npm run autostart:setup
+```
+
+It asks for `sudo` only to install and enable `mail-mcp.service`. The service runs as your normal Pi user, waits for the network, loads the existing `.env.local`, and restarts automatically if Mail-MCP or the tunnel exits.
+
+```bash
+# Check configured / enabled / active status
+npm run autostart:detect
+
+# Stop and remove the systemd service
+npm run autostart:remove
+```
+
+If Node.js, npm, or `tunnel-client` live outside the standard system path on the Pi, set `NODE_BIN`, `NPM_BIN`, or `TUNNEL_CLIENT_BIN` in `.env.local` as shown in `.env.example`.
+
 For a direct remote deployment, use any platform you trust. Configure HTTPS, OAuth/OIDC, a strict user allowlist, and a durable Redis store; never expose `AUTH_MODE=local` to the public internet.
 
 ## License
