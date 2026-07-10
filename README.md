@@ -195,7 +195,7 @@ The tunnel must be associated with the target ChatGPT workspace. If it is not li
 
 ## Start script
 
-After installing `tunnel-client`, Mail-MCP includes a start script that loads `.env.local`, starts the server, waits for `/api/health`, validates the tunnel configuration, then starts the tunnel.
+After installing `tunnel-client`, Mail-MCP includes a start script that loads `.env.local`, starts the server, waits for `/api/health`, then starts the tunnel.
 
 Add the two tunnel values at the end of `.env.local`:
 

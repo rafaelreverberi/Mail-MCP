@@ -14,8 +14,10 @@ if [[ -f "$ENV_FILE" && "${MAIL_MCP_ENV_LOADED:-}" != "1" ]]; then
     const { spawn } = require("node:child_process");
     const child = spawn(process.argv[1], process.argv.slice(2), { env: process.env, stdio: "inherit" });
     child.on("error", (error) => { console.error(error.message); process.exit(1); });
+    process.on("SIGINT", () => child.kill("SIGINT"));
+    process.on("SIGTERM", () => child.kill("SIGTERM"));
     child.on("exit", (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
-  ' "$0" "$@"
+  ' "$SCRIPT_DIR/start.sh" "$@"
 fi
 
 require_value() {
@@ -28,6 +30,17 @@ require_value() {
 
 require_value CONTROL_PLANE_API_KEY
 require_value CONTROL_PLANE_TUNNEL_ID
+
+if [[ -n "${TUNNEL_CLIENT_BIN:-}" ]]; then
+  TUNNEL_CLIENT="$TUNNEL_CLIENT_BIN"
+elif command -v tunnel-client >/dev/null 2>&1; then
+  TUNNEL_CLIENT="$(command -v tunnel-client)"
+elif [[ -x "$HOME/.local/bin/tunnel-client" ]]; then
+  TUNNEL_CLIENT="$HOME/.local/bin/tunnel-client"
+else
+  echo "tunnel-client was not found. Install it from OpenAI Platform tunnel settings or set TUNNEL_CLIENT_BIN." >&2
+  exit 1
+fi
 
 MCP_HOST="${MCP_HOST:-127.0.0.1}"
 MCP_PORT="${MCP_PORT:-3000}"
@@ -67,11 +80,6 @@ if ! node -e 'fetch(process.argv[1]).then((response) => process.exit(response.ok
   exit 1
 fi
 
-tunnel-client doctor \
-  --control-plane.tunnel-id "$CONTROL_PLANE_TUNNEL_ID" \
-  --mcp.server-url "$MCP_URL" \
-  --explain
-
-tunnel-client run \
+"$TUNNEL_CLIENT" run \
   --control-plane.tunnel-id "$CONTROL_PLANE_TUNNEL_ID" \
   --mcp.server-url "$MCP_URL"
